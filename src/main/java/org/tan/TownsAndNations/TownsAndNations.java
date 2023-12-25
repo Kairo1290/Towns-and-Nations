@@ -61,10 +61,11 @@ public final class TownsAndNations extends JavaPlugin {
 
 
         logger.info("[TaN] -Loading Configs");
-        ConfigUtil.saveResource("config.yml");
+        ConfigUtil.saveAndUpdateResource("config.yml", "config.yml");
         ConfigUtil.loadCustomConfig("config.yml");
-        ConfigUtil.saveResource("townLevelUpRequirement.yml");
+        ConfigUtil.saveAndUpdateResource("townLevelUpRequirement.yml", "townLevelUpRequirement.yml");
         ConfigUtil.loadCustomConfig("townLevelUpRequirement.yml");
+        System.out.println("test load dropchances");
 
         DropChances.load();
 
