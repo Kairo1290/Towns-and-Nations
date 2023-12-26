@@ -122,6 +122,7 @@ public class ChatListener implements Listener {
         if(chatData.getCategory() == PlayerChatListenerStorage.ChatCategory.CHANGE_DESCRIPTION){
 
             String newDesc = event.getMessage();
+            String townId = chatData.getData().get(TOWN_ID);
 
             FileConfiguration config =  ConfigUtil.getCustomConfig("config.yml");
             int maxSize = config.getInt("TownDescSize");
@@ -131,7 +132,7 @@ public class ChatListener implements Listener {
             }
 
 
-            TownDataStorage.get(player).setDescription(newDesc);
+            TownDataStorage.get(townId).setDescription(newDesc);
             player.sendMessage(ChatUtils.getTANString() + Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_MESSAGE_IN_CHAT_SUCCESS.getTranslation());
             PlayerChatListenerStorage.removePlayer(player);
             event.setCancelled(true);

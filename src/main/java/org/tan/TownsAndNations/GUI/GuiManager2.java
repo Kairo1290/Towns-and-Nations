@@ -1343,7 +1343,7 @@ public class GuiManager2 {
             event.setCancelled(true);
 
             if(playerStat.isTownLeader())
-                OpenTownChangeOwnershipPlayerSelect(player);
+                OpenTownChangeOwnershipPlayerSelect(player, playerTown);
             else
                 player.sendMessage(ChatUtils.getTANString() + Lang.NOT_TOWN_LEADER_ERROR.getTranslation());
 
@@ -1352,7 +1352,9 @@ public class GuiManager2 {
         GuiItem _changeMessage = ItemBuilder.from(changeMessage).asGuiItem(event -> {
             player.closeInventory();
             player.sendMessage(ChatUtils.getTANString() + Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_MESSAGE_IN_CHAT.getTranslation());
-            PlayerChatListenerStorage.addPlayer(PlayerChatListenerStorage.ChatCategory.CHANGE_DESCRIPTION,player);
+            Map<MessageKey, String> data = new HashMap<>();
+            data.put(MessageKey.TOWN_ID,playerTown.getID());
+            PlayerChatListenerStorage.addPlayer(PlayerChatListenerStorage.ChatCategory.CHANGE_DESCRIPTION,player,data);
             event.setCancelled(true);
 
         });
@@ -1402,14 +1404,12 @@ public class GuiManager2 {
 
         gui.open(player);
     }
-    public static void OpenTownChangeOwnershipPlayerSelect(Player player) {
+    public static void OpenTownChangeOwnershipPlayerSelect(Player player, TownData townData) {
 
         Gui gui = createChestGui("Town",3);
 
-        TownData playerTown = TownDataStorage.get(player);
-
         int i = 0;
-        for (String playerUUID : playerTown.getPlayerList()){
+        for (String playerUUID : townData.getPlayerList()){
             OfflinePlayer townPlayer = Bukkit.getServer().getOfflinePlayer(UUID.fromString(playerUUID));
 
             ItemStack playerHead = HeadUtils.getPlayerHead(townPlayer.getName(),townPlayer);
@@ -1421,7 +1421,7 @@ public class GuiManager2 {
             GuiItem _playerHead = ItemBuilder.from(playerHead).asGuiItem(event -> {
                 event.setCancelled(true);
 
-                playerTown.setUuidLeader(townPlayer.getUniqueId().toString());
+                townData.setUuidLeader(townPlayer.getUniqueId().toString());
                 player.sendMessage(ChatUtils.getTANString() + Lang.GUI_TOWN_SETTINGS_TRANSFER_OWNERSHIP_TO_SPECIFIC_PLAYER_SUCCESS.getTranslation(townPlayer.getName()));
                 OpenTownMenuHaveTown(player);
             });
