@@ -78,4 +78,4 @@ rareCropsValue: 3
 
 ##
 #Cost of renaming a town:
-CostOfRenamingTown: 100
+ChangeTownNameCost: 100

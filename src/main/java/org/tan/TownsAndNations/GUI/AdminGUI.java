@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.tan.TownsAndNations.DataClass.PlayerData;
 import org.tan.TownsAndNations.DataClass.TownData;
 import org.tan.TownsAndNations.Lang.Lang;
+import org.tan.TownsAndNations.enums.MessageKey;
 import org.tan.TownsAndNations.storage.PlayerChatListenerStorage;
 import org.tan.TownsAndNations.storage.PlayerDataStorage;
 import org.tan.TownsAndNations.storage.TownDataStorage;
@@ -138,8 +139,16 @@ public class AdminGUI {
 
 
         GuiItem _changeTownName = ItemBuilder.from(changeTownName).asGuiItem(event -> {
-            event.setCancelled(true);
-            player.sendMessage("Not implemented yet");
+
+            player.sendMessage(ChatUtils.getTANString() + Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_MESSAGE_IN_CHAT.getTranslation());
+            Map<MessageKey, String> data = new HashMap<>();
+
+            data.put(MessageKey.TOWN_ID,townData.getID());
+            data.put(MessageKey.COST,Integer.toString(0));
+
+            PlayerChatListenerStorage.addPlayer(PlayerChatListenerStorage.ChatCategory.CHANGE_TOWN_NAME,player,data);
+            player.closeInventory();
+
         });
         GuiItem _changeTownDescription = ItemBuilder.from(changeTownDescription).asGuiItem(event -> {
             player.sendMessage("Not implemented yet");

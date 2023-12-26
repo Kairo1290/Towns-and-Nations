@@ -30,7 +30,6 @@ import java.util.ArrayList;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class GuiManager2 {
 
@@ -1127,13 +1126,15 @@ public class GuiManager2 {
             OpenTownEconomicsHistory(player,HistoryEnum.CHUNK);
             event.setCancelled(true);
         });
-        GuiItem _workbenchSpending = ItemBuilder.from(workbenchSpending).asGuiItem(event -> event.setCancelled(true));
+        GuiItem _workbenchSpending = ItemBuilder.from(workbenchSpending).asGuiItem(event -> {
+            OpenTownEconomicsHistory(player,HistoryEnum.MISCELLANEOUS);
+            event.setCancelled(true);
+        });
         GuiItem _donation = ItemBuilder.from(donation).asGuiItem(event -> {
             player.sendMessage(ChatUtils.getTANString() + Lang.WRITE_IN_CHAT_AMOUNT_OF_MONEY_FOR_TOWN_DONATION.getTranslation());
             PlayerChatListenerStorage.addPlayer(PlayerChatListenerStorage.ChatCategory.DONATION,player);
             player.closeInventory();
             event.setCancelled(true);
-
         });
         GuiItem _donationHistory = ItemBuilder.from(donationHistory).asGuiItem(event -> {
             OpenTownEconomicsHistory(player,HistoryEnum.DONATION);
@@ -1313,6 +1314,27 @@ public class GuiManager2 {
             case SALARY -> {
 
             }
+            case MISCELLANEOUS -> {
+                int i = 0;
+
+                for (TransactionHistory miscellaneous : town.getTreasury().getMiscellaneousPurchaseHistory()){
+
+                    ItemStack transactionIcon = HeadUtils.getCustomLoreItem(Material.PAPER,
+                            ChatColor.DARK_AQUA + miscellaneous.getDate(),
+                            Lang.MISCELLANEOUS_HISTORY_DESC1.getTranslation(miscellaneous.getName()),
+                            Lang.MISCELLANEOUS_HISTORY_DESC2.getTranslation(miscellaneous.getAmount())
+                    );
+
+                    GuiItem _transactionIcon = ItemBuilder.from(transactionIcon).asGuiItem(event -> event.setCancelled(true));
+
+                    gui.setItem(i,_transactionIcon);
+                    i = i + 1;
+
+                    if (i > 44){
+                        break;
+                    }
+                }
+            }
 
         }
 
@@ -1478,6 +1500,16 @@ public class GuiManager2 {
                 Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_APPLICATION_CLICK_TO_SWITCH.getTranslation()
         );
 
+        int changeTownNameCost = ConfigUtil.getCustomConfig("config.yml").getInt("ChangeTownNameCost");
+
+        ItemStack changeTownName = HeadUtils.getCustomLoreItem(Material.NAME_TAG,
+                Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_NAME.getTranslation(),
+                Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_NAME_DESC1.getTranslation(playerTown.getName()),
+                Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_NAME_DESC2.getTranslation(),
+                Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_NAME_DESC3.getTranslation(changeTownNameCost)
+        );
+
+
         ItemStack getBackArrow = HeadUtils.getCustomLoreItem(Material.ARROW,
                 Lang.GUI_BACK_ARROW.getTranslation());
 
@@ -1519,9 +1551,7 @@ public class GuiManager2 {
 
         });
 
-            GuiItem _changeMessage = ItemBuilder.from(changeMessage).asGuiItem(event -> {
-
-
+        GuiItem _changeMessage = ItemBuilder.from(changeMessage).asGuiItem(event -> {
             player.closeInventory();
             player.sendMessage(ChatUtils.getTANString() + Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_MESSAGE_IN_CHAT.getTranslation());
             PlayerChatListenerStorage.addPlayer(PlayerChatListenerStorage.ChatCategory.CHANGE_DESCRIPTION,player);
@@ -1530,10 +1560,30 @@ public class GuiManager2 {
         });
 
         GuiItem _toggleApplication = ItemBuilder.from(toggleApplication).asGuiItem(event -> {
-
             playerTown.swapRecruiting();
             OpenTownSettings(player);
             event.setCancelled(true);
+        });
+
+        GuiItem _changeTownName = ItemBuilder.from(changeTownName).asGuiItem(event -> {
+            event.setCancelled(true);
+
+            if(playerTown.getBalance() < changeTownNameCost){
+                player.sendMessage(ChatUtils.getTANString() + Lang.TOWN_NOT_ENOUGH_MONEY.getTranslation());
+                return;
+            }
+
+            if(playerStat.isTownLeader()){
+                player.sendMessage(ChatUtils.getTANString() + Lang.GUI_TOWN_SETTINGS_CHANGE_TOWN_MESSAGE_IN_CHAT.getTranslation());
+                Map<MessageKey, String> data = new HashMap<>();
+                data.put(MessageKey.TOWN_ID,playerTown.getID());
+                data.put(MessageKey.COST,Integer.toString(changeTownNameCost));
+                PlayerChatListenerStorage.addPlayer(PlayerChatListenerStorage.ChatCategory.CHANGE_TOWN_NAME,player,data);
+                player.closeInventory();
+            }
+            else
+                player.sendMessage(ChatUtils.getTANString() + Lang.NOT_TOWN_LEADER_ERROR.getTranslation());
+
         });
 
         GuiItem _getBackArrow = ItemBuilder.from(getBackArrow).asGuiItem(event -> {
@@ -1548,6 +1598,7 @@ public class GuiManager2 {
         gui.setItem(12, _changeOwnershipTown);
         gui.setItem(13, _changeMessage);
         gui.setItem(14, _toggleApplication);
+        gui.setItem(15, _changeTownName);
 
         gui.setItem(18, _getBackArrow);
 
